@@ -59,6 +59,42 @@ public class TextNodeTest {
         assertTrue(tn.parent() == tail.parent());
     }
 
+    @Test public void testSplitOneWordAtIndexZero() {
+        Document doc = Jsoup.parse("<div>Hello</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(0);
+        assertEquals("", tn.getWholeText());
+        assertEquals("Hello", tail.getWholeText());
+        tail.text("Hello there!");
+        assertEquals("Hello there!", div.text());
+        assertTrue(tn.parent() == tail.parent());
+    }
+
+    @Test public void testSplitTextAtIndexOne() {
+        Document doc = Jsoup.parse("<div>Hello there</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(1);
+        assertEquals("H", tn.getWholeText());
+        assertEquals("ello there", tail.getWholeText());
+        tail.text("ello there!");
+        assertEquals("Hello there!", div.text());
+        assertTrue(tn.parent() == tail.parent());
+    }
+
+    @Test public void testSplitTextAtLastIndex() {
+        Document doc = Jsoup.parse("<div>Hello there</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(10);
+        assertEquals("Hello ther", tn.getWholeText());
+        assertEquals("e", tail.getWholeText());
+        tail.text("e!");
+        assertEquals("Hello there!", div.text());
+        assertTrue(tn.parent() == tail.parent());
+    }
+
     @Test public void testSplitAnEmbolden() {
         Document doc = Jsoup.parse("<div>Hello there</div>");
         Element div = doc.select("div").first();
