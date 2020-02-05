@@ -9,11 +9,13 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- Test TextNodes
-
- @author Jonathan Hedley, jonathan@hedley.net */
+ * Test TextNodes
+ *
+ * @author Jonathan Hedley, jonathan@hedley.net
+ */
 public class TextNodeTest {
-    @Test public void testBlank() {
+    @Test
+    public void testBlank() {
         TextNode one = new TextNode("");
         TextNode two = new TextNode("     ");
         TextNode three = new TextNode("  \n\n   ");
@@ -26,8 +28,9 @@ public class TextNodeTest {
         assertFalse(four.isBlank());
         assertFalse(five.isBlank());
     }
-    
-    @Test public void testTextBean() {
+
+    @Test
+    public void testTextBean() {
         Document doc = Jsoup.parse("<p>One <span>two &amp;</span> three &amp;</p>");
         Element p = doc.select("p").first();
 
@@ -35,10 +38,10 @@ public class TextNodeTest {
         assertEquals("two &", span.text());
         TextNode spanText = (TextNode) span.childNode(0);
         assertEquals("two &", spanText.text());
-        
+
         TextNode tn = (TextNode) p.childNode(2);
         assertEquals(" three &", tn.text());
-        
+
         tn.text(" POW!");
         assertEquals("One <span>two &amp;</span> POW!", TextUtil.stripNewlines(p.html()));
 
@@ -47,7 +50,8 @@ public class TextNodeTest {
         assertEquals("One <span>two &amp;</span>kablam &amp;", TextUtil.stripNewlines(p.html()));
     }
 
-    @Test public void testSplitText() {
+    @Test
+    public void testSplitText() {
         Document doc = Jsoup.parse("<div>Hello there</div>");
         Element div = doc.select("div").first();
         TextNode tn = (TextNode) div.childNode(0);
@@ -59,7 +63,8 @@ public class TextNodeTest {
         assertTrue(tn.parent() == tail.parent());
     }
 
-    @Test public void testSplitAnEmbolden() {
+    @Test
+    public void testSplitAnEmbolden() {
         Document doc = Jsoup.parse("<div>Hello there</div>");
         Element div = doc.select("div").first();
         TextNode tn = (TextNode) div.childNode(0);
@@ -69,17 +74,45 @@ public class TextNodeTest {
         assertEquals("Hello <b>there</b>", TextUtil.stripNewlines(div.html())); // not great that we get \n<b>there there... must correct
     }
 
-    @Test public void testWithSupplementaryCharacter(){
+    @Test
+    public void testWithSupplementaryCharacter() {
         Document doc = Jsoup.parse(new String(Character.toChars(135361)));
         TextNode t = doc.body().textNodes().get(0);
         assertEquals(new String(Character.toChars(135361)), t.outerHtml().trim());
     }
 
-    @Test public void testLeadNodesHaveNoChildren() {
+    @Test
+    public void testLeadNodesHaveNoChildren() {
         Document doc = Jsoup.parse("<div>Hello there</div>");
         Element div = doc.select("div").first();
         TextNode tn = (TextNode) div.childNode(0);
         List<Node> nodes = tn.childNodes();
         assertEquals(0, nodes.size());
     }
+
+    @Test
+    public void testSplitTextBoundaryIndexContentOneWord() {
+        Document doc = Jsoup.parse("<div>Hello</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(4);
+        assertEquals("o", tail.getWholeText());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSplitTextOutOfBoundsIndexContentOneWord() {
+        Document doc = Jsoup.parse("<div>Hello</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(6);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSplitTextOutOfBoundsIndexContentMultiWord() {
+        Document doc = Jsoup.parse("<div>Hello World</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(12);
+    }
+
 }
