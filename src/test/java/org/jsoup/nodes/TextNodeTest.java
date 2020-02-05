@@ -63,8 +63,33 @@ public class TextNodeTest {
         assertTrue(tn.parent() == tail.parent());
     }
 
-    @Test
-    public void testSplitAnEmbolden() {
+    @Test(expected = IllegalArgumentException.class)
+    public void testSplitTextNegativeIndexContentOneWord(){
+        Document doc = Jsoup.parse("<div>Hello</div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(-1);
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testSplitTextNegativeIndexContentBlank(){
+        Document doc = Jsoup.parse("<div></div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(-1);
+        assertEquals("",tail.getWholeText());
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testSplitTextZeroIndexContentBlank(){
+        Document doc = Jsoup.parse("<div></div>");
+        Element div = doc.select("div").first();
+        TextNode tn = (TextNode) div.childNode(0);
+        TextNode tail = tn.splitText(0);
+        assertEquals("",tail.getWholeText());
+    }
+
+    @Test public void testSplitAnEmbolden() {
         Document doc = Jsoup.parse("<div>Hello there</div>");
         Element div = doc.select("div").first();
         TextNode tn = (TextNode) div.childNode(0);
