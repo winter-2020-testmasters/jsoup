@@ -206,4 +206,6 @@ public class TokeniserStateTest {
         Document doc = Jsoup.parse(html);
         assertEquals("<p></p><p></p><div id=\"one\"><span>Two</span></div>", TextUtil.stripNewlines(doc.body().html()));
     }
+
+
 }
