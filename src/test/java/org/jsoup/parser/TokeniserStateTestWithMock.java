@@ -22,4 +22,12 @@ public class TokeniserStateTestWithMock {
         verify(tokeniser, times(1)).advanceTransition(TokeniserState.TagOpen);
         verify(tokeniser, times(1)).transition(TokeniserState.TagName);
     }
+
+    @Test
+    public void testTokeniserTagOpen() {
+        Tokeniser tokeniser = setup("div>");
+        tokeniser.transition(TokeniserState.TagOpen);
+        tokeniser.read();
+        verify(tokeniser, times(1)).transition(TokeniserState.TagOpen);
+    }
 }
