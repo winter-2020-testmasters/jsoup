@@ -2,6 +2,8 @@ package org.jsoup.parser;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.*;
@@ -18,9 +20,10 @@ public class TokeniserStateTestWithMock {
     @Test
     public void testTokeniser() {
         Tokeniser tokeniser = setup("<div>");
+        InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
-        verify(tokeniser, times(1)).advanceTransition(TokeniserState.TagOpen);
-        verify(tokeniser, times(1)).transition(TokeniserState.TagName);
+        inOrder.verify(tokeniser, times(1)).advanceTransition(TokeniserState.TagOpen);
+        inOrder.verify(tokeniser, times(1)).transition(TokeniserState.TagName);
     }
 
     @Test
