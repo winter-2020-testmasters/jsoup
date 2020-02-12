@@ -158,8 +158,8 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testTagOpen(){
-        Tokeniser tokeniser = setup("<div>",TokeniserState.Data);
+    public void testTagOpen() {
+        Tokeniser tokeniser = setup("<div>", TokeniserState.Data);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
@@ -168,8 +168,8 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testEndTagOpen(){
-        Tokeniser tokeniser = setup("</>",TokeniserState.Data);
+    public void testEndTagOpen() {
+        Tokeniser tokeniser = setup("</>", TokeniserState.Data);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
@@ -179,8 +179,8 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testSelfClosingStartTag(){
-        Tokeniser tokeniser = setup("<input/>",TokeniserState.Data);
+    public void testSelfClosingStartTag() {
+        Tokeniser tokeniser = setup("<input/>", TokeniserState.Data);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
@@ -190,8 +190,8 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testRcDataTagOpen(){
-        Tokeniser tokeniser = setup("<title>",TokeniserState.Rcdata);
+    public void testRcDataTagOpen() {
+        Tokeniser tokeniser = setup("<title>", TokeniserState.Rcdata);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.RcdataLessthanSign);
@@ -199,8 +199,8 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testRcDataEndTagOpen(){
-        Tokeniser tokeniser = setup("</title>",TokeniserState.Rcdata);
+    public void testRcDataEndTagOpen() {
+        Tokeniser tokeniser = setup("</title>", TokeniserState.Rcdata);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.RcdataLessthanSign);
@@ -211,16 +211,16 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testRawText(){
-        Tokeniser tokeniser = setup("<Hello",TokeniserState.RawtextLessthanSign);
+    public void testRawText() {
+        Tokeniser tokeniser = setup("<Hello", TokeniserState.RawtextLessthanSign);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).transition(TokeniserState.Rawtext);
     }
 
     @Test
-    public void testRawTextEndTagOpen(){
-        Tokeniser tokeniser = setup("/Hello",TokeniserState.RawtextLessthanSign);
+    public void testRawTextEndTagOpen() {
+        Tokeniser tokeniser = setup("/Hello", TokeniserState.RawtextLessthanSign);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.RawtextEndTagOpen);
@@ -230,11 +230,11 @@ public class TokeniserStateTestWithMock {
 
 
     @Test
-    public void testComment(){
-        Tokeniser tokeniser = setup("--Comment-->",TokeniserState.CommentStart);
+    public void testComment() {
+        Tokeniser tokeniser = setup("--Comment-->", TokeniserState.CommentStart);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
-        inOrder.verify(tokeniser,times(2)).transition(TokeniserState.CommentStartDash);
+        inOrder.verify(tokeniser, times(2)).transition(TokeniserState.CommentStartDash);
         inOrder.verify(tokeniser).transition(TokeniserState.Comment);
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.CommentEndDash);
         inOrder.verify(tokeniser).transition(TokeniserState.CommentEnd);
@@ -243,8 +243,8 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testCommentEndBang(){
-        Tokeniser tokeniser = setup("Comment--!>",TokeniserState.Comment);
+    public void testCommentEndBang() {
+        Tokeniser tokeniser = setup("Comment--!>", TokeniserState.Comment);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).advanceTransition(TokeniserState.CommentEndDash);
@@ -255,24 +255,383 @@ public class TokeniserStateTestWithMock {
     }
 
     @Test
-    public void testCharacterReferenceInData(){
-        Tokeniser tokeniser = setup("&Data",TokeniserState.Data);
+    public void testCharacterReferenceInData() {
+        Tokeniser tokeniser = setup("&Data", TokeniserState.Data);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
-        inOrder.verify(tokeniser).consumeCharacterReference(null,false);
+        inOrder.verify(tokeniser).consumeCharacterReference(null, false);
         inOrder.verify(tokeniser).emit('&');
         inOrder.verify(tokeniser).transition(TokeniserState.Data);
     }
 
     @Test
-    public void testCharacterReferenceInRcData(){
-        Tokeniser tokeniser = setup("&RcData",TokeniserState.Rcdata);
+    public void testCharacterReferenceInRcData() {
+        Tokeniser tokeniser = setup("&RcData", TokeniserState.Rcdata);
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
-        inOrder.verify(tokeniser).consumeCharacterReference(null,false);
+        inOrder.verify(tokeniser).consumeCharacterReference(null, false);
         inOrder.verify(tokeniser).emit('&');
         inOrder.verify(tokeniser).transition(TokeniserState.Rcdata);
 
     }
 
+    @Test
+    public void testBogusComment() {
+        Tokeniser tokeniser = setup("<?some comment>", TokeniserState.Data);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.BogusComment);
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.Data);
+    }
+
+    @Test
+    public void testMarkUpDeclarationOpenToCommentStart() {
+        Tokeniser tokeniser = setup("-- Comment-->", TokeniserState.MarkupDeclarationOpen);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.CommentStart);
+    }
+
+    @Test
+    public void testMarkUpDeclarationOpenToDocType() {
+        Tokeniser tokeniser = setup("<!DOCTYPE>", TokeniserState.Data);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.MarkupDeclarationOpen);
+        inOrder.verify(tokeniser).transition(TokeniserState.Doctype);
+    }
+
+    @Test
+    public void testMarkUpDeclarationOpenToCDataSection() {
+        Tokeniser tokeniser = setup("<![CDATA[]]>", TokeniserState.Data);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.MarkupDeclarationOpen);
+        inOrder.verify(tokeniser).transition(TokeniserState.CdataSection);
+    }
+
+    @Test
+    public void testMarkUpDeclarationOpenToBogusComment() {
+        Tokeniser tokeniser = setup("<! bogus>", TokeniserState.Data);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.TagOpen);
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.MarkupDeclarationOpen);
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.BogusComment);
+    }
+
+    @Test
+    public void testDocTypeToBeforeDocTypeName() {
+        Tokeniser tokeniser = setup(" html>", TokeniserState.Doctype);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.BeforeDoctypeName);
+    }
+
+    @Test
+    public void testBeforeDoctypeNameToDocTypeName() {
+        Tokeniser tokeniser = setup(" html>", TokeniserState.BeforeDoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeName);
+    }
+
+    @Test
+    public void DoctypeNameToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.DoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void DoctypeNameToAfterDocTypeName() {
+        Tokeniser tokeniser = setup(" >", TokeniserState.DoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypeName);
+    }
+
+    @Test
+    public void AfterDocTypeNameToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.AfterDoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.Data);
+    }
+
+    @Test
+    public void AfterDocTypeNameToAfterDoctypePublicKeyword() {
+        Tokeniser tokeniser = setup(" PUBLIC ''>", TokeniserState.AfterDoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypePublicKeyword);
+    }
+
+    @Test
+    public void AfterDocTypeNameToAfterDoctypeSystemKeyword() {
+        Tokeniser tokeniser = setup(" SYSTEM ''>", TokeniserState.AfterDoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypeSystemKeyword);
+    }
+
+    @Test
+    public void AfterDocTypeNameToBogusDocType() {
+        Tokeniser tokeniser = setup("Bogus>", TokeniserState.AfterDoctypeName);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).advanceTransition(TokeniserState.BogusDoctype);
+    }
+
+    @Test
+    public void AfterDoctypePublicKeywordToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.AfterDoctypePublicKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void AfterDoctypePublicKeywordToDoctypeSystemIdentifier_doubleQuoted() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.AfterDoctypePublicKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypePublicIdentifier_doubleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypePublicKeywordToDoctypePublicIdentifier_singleQuoted() {
+        Tokeniser tokeniser = setup("'>", TokeniserState.AfterDoctypePublicKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypePublicIdentifier_singleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypePublicKeywordToBeforeDoctypePublicIdentifier() {
+        Tokeniser tokeniser = setup(" >", TokeniserState.AfterDoctypePublicKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.BeforeDoctypePublicIdentifier);
+    }
+
+    @Test
+    public void BeforeDoctypePublicIdentifierToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.BeforeDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void BeforeDoctypePublicIdentifierToDoctypePublicIdentifier_doubleQuoted() {
+        Tokeniser tokeniser = setup("\"\">", TokeniserState.BeforeDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypePublicIdentifier_doubleQuoted);
+    }
+
+    @Test
+    public void BeforeDoctypePublicIdentifierToDoctypePublicIdentifier_singleQuoted() {
+        Tokeniser tokeniser = setup("\'\'>", TokeniserState.BeforeDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypePublicIdentifier_singleQuoted);
+    }
+
+    @Test
+    public void DoctypePublicIdentifier_doubleQuotedToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.DoctypePublicIdentifier_doubleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void DoctypePublicIdentifier_doubleQuotedToAfterDoctypePublicIdentifier() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.DoctypePublicIdentifier_doubleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypePublicIdentifier);
+    }
+
+    @Test
+    public void DoctypePublicIdentifier_singleQuotedToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.DoctypePublicIdentifier_singleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void DoctypePublicIdentifier_singleQuotedToAfterDoctypePublicIdentifier() {
+        Tokeniser tokeniser = setup("'>", TokeniserState.DoctypePublicIdentifier_singleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypePublicIdentifier);
+    }
+
+    @Test
+    public void AfterDoctypePublicIdentifierToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.AfterDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void AfterDoctypePublicIdentifierToDoctypeSystemIdentifier_doubleQuoted() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.AfterDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_doubleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypePublicIdentifierToDoctypeSystemIdentifier_singleQuoted() {
+        Tokeniser tokeniser = setup("'>", TokeniserState.AfterDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_singleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypePublicIdentifierToBetweenDoctypePublicAndSystemIdentifiers() {
+        Tokeniser tokeniser = setup(" >", TokeniserState.AfterDoctypePublicIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.BetweenDoctypePublicAndSystemIdentifiers);
+    }
+
+    @Test
+    public void BetweenDoctypePublicAndSystemIdentifiersToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.BetweenDoctypePublicAndSystemIdentifiers);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void BetweenDoctypePublicAndSystemIdentifiersToDoctypeSystemIdentifier_doubleQuoted() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.BetweenDoctypePublicAndSystemIdentifiers);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_doubleQuoted);
+    }
+
+    @Test
+    public void BetweenDoctypePublicAndSystemIdentifiersToDoctypeSystemIdentifier_singleQuoted() {
+        Tokeniser tokeniser = setup("'>", TokeniserState.BetweenDoctypePublicAndSystemIdentifiers);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_singleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypeSystemKeywordToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.AfterDoctypeSystemKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void AfterDoctypeSystemKeywordToDoctypeSystemIdentifier_doubleQuoted() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.AfterDoctypeSystemKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_doubleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypeSystemKeywordToDoctypeSystemIdentifier_singleQuoted() {
+        Tokeniser tokeniser = setup("\'>", TokeniserState.AfterDoctypeSystemKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_singleQuoted);
+    }
+
+    @Test
+    public void AfterDoctypeSystemKeywordToBeforeDoctypeSystemIdentifier() {
+        Tokeniser tokeniser = setup(" >", TokeniserState.AfterDoctypeSystemKeyword);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.BeforeDoctypeSystemIdentifier);
+    }
+
+    @Test
+    public void BeforeDoctypeSystemIdentifierToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.BeforeDoctypeSystemIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void BeforeDoctypeSystemIdentifierToDoctypeSystemIdentifier_doubleQuoted() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.BeforeDoctypeSystemIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_doubleQuoted);
+    }
+
+    @Test
+    public void BeforeDoctypeSystemIdentifierToDoctypeSystemIdentifier_singleQuoted() {
+        Tokeniser tokeniser = setup("\'>", TokeniserState.BeforeDoctypeSystemIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.DoctypeSystemIdentifier_singleQuoted);
+    }
+
+    @Test
+    public void DoctypeSystemIdentifier_doubleQuotedToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.DoctypeSystemIdentifier_doubleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void DoctypeSystemIdentifier_doubleQuotedToAfterDoctypeSystemIdentifier() {
+        Tokeniser tokeniser = setup("\">", TokeniserState.DoctypeSystemIdentifier_doubleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypeSystemIdentifier);
+    }
+
+    @Test
+    public void DoctypeSystemIdentifier_singleQuotedToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.DoctypeSystemIdentifier_singleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void DoctypeSystemIdentifier_singleQuotedToAfterDoctypeSystemIdentifier() {
+        Tokeniser tokeniser = setup("\'>", TokeniserState.DoctypeSystemIdentifier_singleQuoted);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.AfterDoctypeSystemIdentifier);
+    }
+
+    @Test
+    public void AfterDoctypeSystemIdentifierToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.AfterDoctypeSystemIdentifier);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    @Test
+    public void BogusDoctypeToData() {
+        Tokeniser tokeniser = setup(">", TokeniserState.BogusDoctype);
+        InOrder inOrder = Mockito.inOrder(tokeniser);
+        tokeniser.read();
+        inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
 }
