@@ -42,8 +42,29 @@ abstract class TreeBuilder {
         this.baseUri = baseUri;
     }
 
+    protected void initialiseParse(Reader input, Document document, Parser parser, Tokeniser tokeniser) {
+        Validate.notNull(input, "String input must not be null");
+        Validate.notNull(document.location(), "BaseURI must not be null");
+
+        doc = document;
+        doc.parser(parser);
+        this.parser = parser;
+        settings = parser.settings();
+        reader = new CharacterReader(input);
+        currentToken = null;
+        this.tokeniser = tokeniser;
+        stack = new ArrayList<>(32);
+        this.baseUri = document.location();
+    }
+
     Document parse(Reader input, String baseUri, Parser parser) {
         initialiseParse(input, baseUri, parser);
+        runParser();
+        return doc;
+    }
+
+    Document parse(Reader input, Document document, Parser parser, Tokeniser tokeniser) {
+        initialiseParse(input, document, parser, tokeniser);
         runParser();
         return doc;
     }
