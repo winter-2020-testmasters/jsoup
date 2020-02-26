@@ -6,6 +6,8 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -633,5 +635,15 @@ public class TokeniserStateTestWithMock {
         InOrder inOrder = Mockito.inOrder(tokeniser);
         tokeniser.read();
         inOrder.verify(tokeniser).transition(TokeniserState.Data);
+    }
+
+    //Week 6 assignment
+    @Test
+    public void testRcDataEndTagName() {
+        Tokeniser tokeniserMock = mock(Tokeniser.class,CALLS_REAL_METHODS);
+        when(tokeniserMock.isAppropriateEndTagToken()).thenReturn(true);
+        TokeniserState state = TokeniserState.RCDATAEndTagName;
+        state.read(tokeniserMock,new CharacterReader("/>"));
+        assertEquals(TokeniserState.SelfClosingStartTag,tokeniserMock.getState());
     }
 }
